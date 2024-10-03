@@ -10,24 +10,23 @@ Purpose : Generic application start
 
 */
 
+#include "STM32L432KC_TIM16.h"
 #include <stdio.h>
 
 /*********************************************************************
-*
-*       main()
-*
-*  Function description
-*   Application entry point.
-*/
+ *
+ *       main()
+ *
+ *  Function description
+ *   Application entry point.
+ */
 int main(void) {
-  int i;
-
-  for (i = 0; i < 100; i++) {
-    printf("Hello World %d!\n", i);
+  initTIM16();
+  setPWM(500, 1);
+  while (1) {
+    // Do nothing
   }
-  do {
-    i++;
-  } while (1);
+  return 0;
 }
 
 /*************************** End of file ****************************/
