@@ -1,5 +1,5 @@
-#ifndef STM32L4_TIM_H
-#define STM32L4_TIM_H
+#ifndef STM32L4_TIM16_H
+#define STM32L4_TIM16_H
 
 #include <cstdint>
 #include <stdint.h>

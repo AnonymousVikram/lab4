@@ -1,44 +1,30 @@
-#include "STM32L432KC_TIM16.h"
+#include "STM32L432KC_TIM67.h"
 #include "STM32L432KC_GPIO.h"
 #include "STM32L432KC_RCC.h"
 
-void initTIM16() {
+void initTIM6() {
   // Enable the clock for the timer
-  RCC->APB2ENR |= 1 << 16;
+  RCC->APB1ENR1 |= 1 << 4;
 
-  // Enable GPIOB
-  RCC->AHB2ENR |= 1 << 1;
-
-  // Set the AHB Prescaler to 0
-  RCC->CFGR &= ~(0b111 << 4);
-  while (!(RCC->CFGR >> 4 & 0b111))
-    ;
-
-  // Set the APB2 Prescaler to 0
-  RCC->CFGR &= ~(0b111 << 11);
+  // Set the APB1 Prescaler to 0
+  RCC->CFGR &= ~(0b111 << 8);
 
   // At this point, the clock should be going into TIM15
 
-  TIM16->PSC |= 0x1387; // scale the clock down to 1 kHz
+  TIM6->PSC |= 0x1387; // scale the clock down to 1 kHz
 
-  TIM16->CCMR1 |= 0b110 << 4; // PWM mode 1
+  TIM6->CR1 |= 1 << 7; // Auto-reload preload enable
 
-  TIM16->CCMR1 |= 1 << 3; // Preload enable
-
-  TIM16->CCER |= 1; // Enable the output
-
-  TIM16->CR1 |= 1 << 7; // Auto-reload preload enable
-
-  TIM16->EGR |= 1; // Update generation
-
-  // Set the GPIO pin 8 to ALT mode
-  pinMode(8, GPIO_ALT);
+  TIM6->EGR |= 1; // Update generation
 }
 
-void setPWM(uint16_t dutyCycle, uint16_t frequency) {
-  TIM16->ARR = 1000 / frequency;
-  TIM16->CCR1 = 1000 * dutyCycle / 100;
-  TIM16->EGR |= 1; // Update generation
+void waitMillis(uint16_t millis) {
+  TIM6->ARR = millis;
+  TIM6->CR1 |= 1; // Enable the timer
+  while (!(TIM6->SR & 1))
+    ;
+  TIM6->SR &= ~1;  // Clear the update flag
+  TIM6->CR1 &= ~1; // Disable the timer
 }
 
 /*
