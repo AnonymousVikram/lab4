@@ -10,8 +10,8 @@ Purpose : Generic application start
 
 */
 
-#include "STM32L432KC_TIM16.h"
 #include <stdio.h>
+#include "STM32L432KC_TIM16.h"
 
 /*********************************************************************
  *

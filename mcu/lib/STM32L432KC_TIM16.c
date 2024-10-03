@@ -6,6 +6,9 @@ void initTIM16() {
   // Enable the clock for the timer
   RCC->APB2ENR |= 1 << 16;
 
+  // Enable GPIOB
+  RCC->AHB2ENR |= 1 << 1;
+
   // Set the AHB Prescaler to 0
   RCC->CFGR &= ~(0b111 << 4);
   while (!(RCC->CFGR >> 4 & 0b111))
