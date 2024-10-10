@@ -9,22 +9,25 @@ void initTIM6() {
   // Set the APB1 Prescaler to 0
   RCC->CFGR &= ~(0b111 << 8);
 
-  // At this point, the clock should be going into TIM15
+  // At this point, the clock should be going into TIM6
 
-  TIM6->PSC |= 0x1387; // scale the clock down to 1 kHz
+  TIM6->PSC = 3999; // scale the clock down to 1 kHz
 
   TIM6->CR1 |= 1 << 7; // Auto-reload preload enable
-
+  TIM6->CR1 |= 11 << 2;
   TIM6->EGR |= 1; // Update generation
 }
 
 void waitMillis(uint16_t millis) {
-  TIM6->ARR = millis;
+  if (millis == 0)
+    return;
+  TIM6->ARR &= ~(0xFFFF);
+  TIM6->ARR |= millis;
+  TIM6->EGR |= 1;
   TIM6->CR1 |= 1; // Enable the timer
   while (!(TIM6->SR & 1))
     ;
-  TIM6->SR &= ~1;  // Clear the update flag
-  TIM6->CR1 &= ~1; // Disable the timer
+  TIM6->SR &= 0;
 }
 
 /*

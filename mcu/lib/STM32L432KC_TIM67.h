@@ -1,7 +1,6 @@
-#ifndef STM32L4_TIM16_H
-#define STM32L4_TIM16_H
+#ifndef STM32L4_TIM67_H
+#define STM32L4_TIM67_H
 
-#include <cstdint>
 #include <stdint.h>
 
 #define __IO volatile
@@ -32,6 +31,6 @@ typedef struct {
 
 void initTIM6();
 
-void setPWM(uint16_t dutyCycle, uint16_t frequency);
+void waitMillis(uint16_t millis);
 
 #endif

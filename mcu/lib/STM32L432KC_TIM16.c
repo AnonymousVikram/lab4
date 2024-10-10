@@ -2,43 +2,87 @@
 #include "STM32L432KC_GPIO.h"
 #include "STM32L432KC_RCC.h"
 
-void initTIM16() {
-  // Enable the clock for the timer
-  RCC->APB2ENR |= 1 << 16;
+void initTIM16()
+{
 
-  // Enable GPIOB
-  RCC->AHB2ENR |= 1 << 1;
+	// For clock:
+	// Enable APB2ENR
+	// Set the AHB Prescaler to 0
+	// Set the APB2 Prescaler to 0
 
-  // Set the AHB Prescaler to 0
-  RCC->CFGR &= ~(0b111 << 4);
-  while (!(RCC->CFGR >> 4 & 0b111))
-    ;
+	// Enable TIM16
+	RCC->AHB2ENR |= (1 << 0);
+	RCC->APB2ENR |= (1 << 17);
 
-  // Set the APB2 Prescaler to 0
-  RCC->CFGR &= ~(0b111 << 11);
+	// Set the AHB Prescaler to 0
+	RCC->CFGR &= ~(0b1111 << 4);
 
-  // At this point, the clock should be going into TIM15
+	// Set the APB2 Prescaler to 0
+	RCC->CFGR &= ~(0b111 << 13);
 
-  TIM16->PSC |= 0x1387; // scale the clock down to 1 kHz
+	// At this point, the clock is running at 4 MHz
 
-  TIM16->CCMR1 |= 0b110 << 4; // PWM mode 1
+	/*
+	For TIM16:
+	1. Set the counter enable bit in the TIMx_CR1 register
+	2. Set the auto-reload preload enable bit in the TIMx_CR1 register
+	3. Set the update generation bit in the TIMx_EGR register
+	4. Set the capture/compare mode bits in the TIMx_CCMRx register
+	5. Set the output enable bit in the TIMx_CCER register
+	6. Set the output polarity bit in the TIMx_CCER register
+	7. Set the compare value in the TIMx_CCRx register
+	8. Set the auto-reload value in the TIMx_ARR register
+	9. Set the prescaler value in the TIMx_PSC register
+	*/
 
-  TIM16->CCMR1 |= 1 << 3; // Preload enable
+	// Set the auto-reload preload enable bit in the TIMx_CR1 register
+	TIM16->CR1 |= (1 << 7);
 
-  TIM16->CCER |= 1; // Enable the output
+	// Set the output enable bit in the TIMx_CCER register
+	TIM16->CCER |= 1;
 
-  TIM16->CR1 |= 1 << 7; // Auto-reload preload enable
+	// Set the output polarity bit in the TIMx_CCER register
+	TIM16->CCER &= ~(1 << 1);
 
-  TIM16->EGR |= 1; // Update generation
+	// Set the compare value in the TIMx_CCRx register
+	TIM16->CCR1 = 0;
 
-  // Set the GPIO pin 8 to ALT mode
-  pinMode(8, GPIO_ALT);
-}
+	// Set the auto-reload value in the TIMx_ARR register
+	TIM16->ARR = 1000;
 
-void setPWM(uint16_t dutyCycle, uint16_t frequency) {
-  TIM16->ARR = 1000 / frequency;
-  TIM16->CCR1 = 1000 * dutyCycle / 100;
-  TIM16->EGR |= 1; // Update generation
+	// Set the prescaler value in the TIMx_PSC register
+	TIM16->PSC = 3999;
+
+	// Set the PWM mode 1 in the TIMx_CCMRx register
+	TIM16->CCMR1 &= ~(0b111 << 4);
+	TIM16->CCMR1 |= (0b110 << 4);
+
+	// Set the ccmr1 cc1 as output
+	TIM16->CCMR1 &= ~(0b11 << 0);
+	TIM16->CCMR1 |= (0b00 << 0);
+
+	// set the output compare 1 preload enable bit
+	TIM16->CCMR1 |= (1 << 3);
+
+	// Set the update generation bit in the TIMx_EGR register
+	TIM16->EGR |= 1;
+
+	TIM16->BDTR |= (1 << 15);
+	// Set the counter enable bit in the TIMx_CR1 register
+	TIM16->CR1 |= 1;
+
+	// Set the Alternative function to AF14 for PA6
+	GPIOA->MODER &= ~(0b11 << 12);
+	GPIOA->MODER |= (0b10 << 12);
+	GPIOA->AFRL &= ~(0b1111 << 24);
+	GPIOA->AFRL |= (0b1110 << 24);
+};
+
+void setPWM(uint16_t dutyCycle, uint16_t frequency)
+{
+	TIM16->ARR = 1000 / frequency;
+	TIM16->CCR1 = 1000 / frequency * dutyCycle / 100;
+	TIM16->EGR |= 1; // Update generation
 }
 
 /*
